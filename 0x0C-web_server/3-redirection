@@ -5,7 +5,33 @@ sudo apt-get update
 sudo apt-get install -y nginx
 
 echo "Hello World!" | sudo tee /var/www/html/index.html
-string_for_replacement="server_name _;\n\trewrite ^\/redirect_me https:\/\/www.blog.ehoneahobed.com permanent;"
-sudo sed -i "s/server_name _;/$string_for_replacement/" /etc/nginx/sites-enabled/default
 
-sudo service nginx restart
+# This creates a custom Nginx configuration file to handle the redirection
+sudo tee /etc/nginx/sites-available/custom_redirect <<EOF
+server {
+    listen 80;
+    server_name _;
+
+    location /redirect_me {
+        return 301 https://www.blog.ehoneahobed.com$request_uri;
+    }
+
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+}
+EOF
+
+# This creates a symbolic link to enable the custom configuration
+sudo ln -s /etc/nginx/sites-available/custom_redirect /etc/nginx/sites-enabled/
+
+# This tests the Nginx configuration for syntax errors
+sudo nginx -t
+
+# If the configuration is valid, restart Nginx
+if [ $? -eq 0 ]; then
+    sudo service nginx restart
+else
+    echo "Nginx configuration is invalid. Please check the configuration and fix any errors."
+fi

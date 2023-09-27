@@ -5,3 +5,13 @@ apt-get -y install nginx
 ufw allow 'Nginx HTTP'
 echo "Hello World!" > /var/www/html/index.html
 service nginx start
+
+# Add a sleep to give Nginx some time to start
+sleep 2
+
+# Check if Nginx is running and serving the expected content
+if curl -s -I http://localhost | grep "HTTP/1.1 200 OK" >/dev/null; then
+  echo "Nginx is installed and serving content correctly."
+else
+  echo "Nginx installation or configuration may have issues."
+fi
