@@ -1,32 +1,30 @@
 #!/usr/bin/python3
 """
-This will be using a REST API, for a given employee ID and
-returns information about his/her TODO list progress
+A Python script using a REST API, for a given employee ID
+and returns information about his/her TODO list progress
 """
-
+import csv
 import json
 import requests
+import sys
 
-if __name__ == '__main__':
-    users = requests.get("http://jsonplaceholder.typicode.com/users",
-                         verify=False).json()
-    userdict = {}
-    usernamedict = {}
-    for user in users:
-        uid = user.get("id")
-        userdict[uid] = []
-        usernamedict[uid] = user.get("username")
-    todo = requests.get("http://jsonplaceholder.typicode.com/todos",
-                        verify=False).json()
 
-    for task in todo:
-        taskdict = {
-            "task": task.get('title'),
-            "completed": task.get('completed'),
-            "username": usernamedict.get(uid)
-        }
-        uid = task.get("userId")
+if __name__ == "__main__":
 
-        userdict.get(uid).append(taskdict)
-    with open("todo_all_employees.json", 'w') as jsonfile:
-        json.dump(userdict, jsonfile)
+    req_todos = requests.get(
+        'https://jsonplaceholder.typicode.com/todos').json()
+    req_user = requests.get(
+        'https://jsonplaceholder.typicode.com/users').json()
+
+    for user in req_user:
+        taskList = []
+        for task in req_todos:
+            if task.get('userId') == user.get('id'):
+                taskDict = {"username": user.get('username'),
+                            "task": task.get('title'),
+                            "completed": task.get('completed')}
+                taskList.append(taskDict)
+        todoAll[user.get('id')] = taskList
+
+    with open('todo_all_employees.json', mode='w') as f:
+        json.dump(todoAll, f)
