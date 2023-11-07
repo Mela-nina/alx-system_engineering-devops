@@ -1,26 +1,32 @@
 #!/usr/bin/python3
 """
-    A returns for a list containing the titles of all hot articles
+	This returns a list containing the titles of all hot articles
 """
 import requests
 
 
-def recurse(subreddit, hot_list=[], afters=""):
-    """ A function to get top hot posts
-
-    Args:
-        subreddit (string): A subreddit queried
-    """
-    web = 'https://www.reddit.com/r/{}/hot.json?after={}'.format(
-        subreddit, afters)
-    headers = {'User-Agent': 'MyAPI/0.1'}
-    main = requests.get(web,
-                        headers=headers, allow_redirects=False)
-    if (main.json().get('error') == 404):
+def recurse(subreddit, hot_list=[], after="", count=0):
+    """ This returns a list of titles of all hot posts on a given subreddit"""
+    url = "https://www.reddit.com/r/{}/hot/.json".format(subreddit)
+    headers = {
+        "User-Agent": "underscoDe@alx-holbertonschool"
+    }
+    params = {
+        "after": after,
+        "count": count,
+        "limit": 100
+    }
+    response = requests.get(url, headers=headers, params=params,
+                            allow_redirects=False)
+    if response.status_code == 404:
         return None
-    if (afters is not None):
-        afters = main.json()['data']['after']
-        for post in main.json()['data']['children']:
-            hot_list.append(post['data']['title'])
-        recurse(subreddit, hot_list, afters)
+
+    results = response.json().get("data")
+    after = results.get("after")
+    count += results.get("dist")
+    for c in results.get("children"):
+        hot_list.append(c.get("data").get("title"))
+
+    if after is not None:
+        return recurse(subreddit, hot_list, after, count)
     return hot_list
