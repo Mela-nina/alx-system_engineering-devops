@@ -1,23 +1,42 @@
 #!/usr/bin/python3
-"""
-    A request for the top ten hot posts
-"""
+'''
+    The module containing functions for working with the Reddit API
+'''
 import requests
 
 
-def top_ten(subreddit):
-    """ A function to get top hot posts
+BASE_URL = 'https://www.reddit.com'
+'''The reddit's base API URL
+'''
 
-    Args:
-        subreddit (string): A subreddit queried
-    """
-    web = 'https://www.reddit.com/r/{}/hot.json?limit=10'.format(subreddit)
-    headers = {'User-Agent': 'MyAPI/0.1'}
-    main = requests.get(web,
-                        headers=headers,
-                        allow_redirects=False)
-    if (main.status_code == 404):
-        print(None)
-    else:
-        for post in main.json()['data']['children']:
+
+def top_ten(subreddit):
+    '''This retrieves the title of the top ten posts from a given subreddit
+    '''
+    api_headers = {
+        'Accept': 'application/json',
+        'User-Agent': ' '.join([
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'AppleWebKit/537.36 (KHTML, like Gecko)',
+            'Chrome/97.0.4692.71',
+            'Safari/537.36',
+            'Edg/97.0.1072.62'
+        ])
+    }
+    sort = 'top'
+    limit = 10
+    res = requests.get(
+        '{}/r/{}/.json?sort={}&limit={}'.format(
+            BASE_URL,
+            subreddit,
+            sort,
+            limit
+        ),
+        headers=api_headers,
+        allow_redirects=False
+    )
+    if res.status_code == 200:
+        for post in res.json()['data']['children'][0:10]:
             print(post['data']['title'])
+    else:
+        print(None)
